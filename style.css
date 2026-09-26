@@ -1,0 +1,66 @@
+#es-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+}
+#es-overlay.es-open { display: flex; }
+
+.es-dialog {
+    position: relative;
+    width: min(600px, 94vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 18px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    background: var(--SmartThemeBlurTintColor, #1e1e24);
+    color: var(--SmartThemeBodyColor, #ddd);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+.es-dialog h3 { margin: 0 0 4px; }
+.es-dialog h4 { margin: 18px 0 8px; font-size: 0.95em; opacity: 0.9; }
+.es-sub { margin: 0; opacity: 0.7; font-size: 0.9em; }
+.es-hint { margin: 6px 0 0; opacity: 0.65; font-size: 0.82em; }
+.es-dialog .text_pole { box-sizing: border-box; margin: 0; }
+
+.es-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.es-row > .text_pole { flex: 1; min-width: 120px; }
+.es-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
+.es-field > label { font-size: 0.82em; opacity: 0.8; }
+
+.es-set {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 6px;
+}
+.es-set-info { flex: 1; min-width: 150px; }
+.es-set-name { font-weight: bold; }
+.es-set-meta { font-size: 0.8em; opacity: 0.65; }
+.es-set-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.es-empty { opacity: 0.6; font-size: 0.9em; padding: 4px 0; }
+.es-badge { font-size: 0.72em; padding: 1px 6px; border-radius: 8px; background: rgba(127, 127, 127, 0.3); margin-left: 6px; }
+
+#es-preview {
+    display: none;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--SmartThemeBorderColor, #777);
+    border-radius: 8px;
+    background: rgba(127, 127, 127, 0.12);
+}
+#es-preview.es-open { display: block; }
+#es-preview h4 { margin: 0 0 8px; }
+.es-list-title { margin: 8px 0 2px; font-size: 0.85em; font-weight: bold; }
+.es-names { margin: 0; padding-left: 18px; font-size: 0.85em; max-height: 140px; overflow-y: auto; }
+.es-warn { color: #e0b050; }
+.es-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
