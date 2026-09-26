@@ -2,7 +2,7 @@
 // between them, with an optional per-device set that applies itself on load.
 // Client-side only. The decision logic lives in sets.js (tested in Node).
 
-import { extensionNames, extension_settings, enableExtension, disableExtension, getExtensionManifest } from '../../../extensions.js';
+import { extensionNames, extensionTypes, extension_settings, enableExtension, disableExtension, getExtensionManifest } from '../../../extensions.js';
 import { saveSettings, saveSettingsDebounced } from '../../../../script.js';
 import { snapshot, planApply, shouldAutoApply, guardAutoApply, guessDeviceLabel } from './sets.js';
 
@@ -110,6 +110,9 @@ function notify(kind, message) {
     else console.log('[Extension Sets]', message);
 }
 
+const TYPE_LABELS = { system: 'built-in', global: 'global', local: 'user' };
+const typeTag = (name) => (extensionTypes && TYPE_LABELS[extensionTypes[name]]) || '';
+
 const nameList = (names) => `<ul class="es-names">${names.map((n) => `<li>${esc(displayName(n))}</li>`).join('')}</ul>`;
 
 // ─────────────────────────── dialog ───────────────────────────
@@ -186,6 +189,7 @@ function renderList() {
                 <div class="es-set-meta">${set.enabled.length} on · ${set.disabled.length} off${set.savedOn ? ' · saved on ' + esc(set.savedOn) : ''}</div>
             </div>
             <div class="es-set-buttons">
+                <button type="button" class="menu_button" data-act="contents" title="See every extension in this set and whether it is on or off">Contents</button>
                 <button type="button" class="menu_button" data-act="apply">Apply…</button>
                 <button type="button" class="menu_button" data-act="update" title="Overwrite this set with the current on/off state">Update</button>
                 <button type="button" class="menu_button" data-act="rename">Rename</button>
@@ -236,6 +240,43 @@ function showPreview(name) {
     box.scrollIntoView({ block: 'nearest' });
 }
 
+/** Every extension, not just the changes: what the set turns on, off, and what it doesn't know about. */
+function showContents(name) {
+    const set = store().sets[name];
+    if (!set) return;
+    pendingApply = null;
+    const self = selfName();
+    const installed = new Set(extensionNames);
+    const inSet = new Set([...set.enabled, ...set.disabled]);
+    const tagged = (names) => `<ul class="es-names">${names.map((n) => {
+        const tag = typeTag(n);
+        return `<li>${esc(displayName(n))}${tag ? ` <span class="es-badge">${tag}</span>` : ''}</li>`;
+    }).join('')}</ul>`;
+    const byName = (a, b) => displayName(a).localeCompare(displayName(b));
+
+    const on = set.enabled.filter((n) => installed.has(n)).sort(byName);
+    const off = set.disabled.filter((n) => installed.has(n)).sort(byName);
+    const missing = [...set.enabled, ...set.disabled].filter((n) => !installed.has(n));
+    const unknown = extensionNames.filter((n) => n !== self && !inSet.has(n)).sort(byName);
+
+    let html = `<h4>“${esc(name)}” — everything in it</h4>
+        <div class="es-list-title">On (${on.length})</div>${on.length ? tagged(on) : '<p class="es-hint">None.</p>'}
+        <div class="es-list-title">Off (${off.length})</div>${off.length ? tagged(off) : '<p class="es-hint">None.</p>'}`;
+    if (unknown.length) {
+        html += `<div class="es-list-title">Not in this set (${unknown.length}) — left exactly as they are when you apply it</div>${tagged(unknown)}`;
+    }
+    if (missing.length) {
+        html += `<div class="es-list-title">In the set but not installed here (${missing.length})</div>${nameList(missing)}`;
+    }
+    html += '<div class="es-actions"><button type="button" class="menu_button" id="es-preview-cancel">Close</button></div>';
+
+    const box = $('es-preview');
+    box.innerHTML = html;
+    box.classList.add('es-open');
+    $('es-preview-cancel').addEventListener('click', hidePreview);
+    box.scrollIntoView({ block: 'nearest' });
+}
+
 function hidePreview() {
     pendingApply = null;
     $('es-preview').classList.remove('es-open');
@@ -263,6 +304,9 @@ function onListClick(e) {
     switch (button.dataset.act) {
         case 'apply':
             showPreview(name);
+            break;
+        case 'contents':
+            showContents(name);
             break;
         case 'update': {
             if (!confirm(`Overwrite “${name}” with the extensions' current on/off state?`)) return;
@@ -395,4 +439,4 @@ jQuery(async () => {
 });
 
 // Exposed for the Node glue tests (test/glue-test.mjs); ST ignores extra exports.
-export { applySet, autoApplyOnLoad, selfName };
+export { applySet, autoApplyOnLoad, selfName, showContents };
