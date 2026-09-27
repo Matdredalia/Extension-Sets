@@ -3,7 +3,7 @@
 // Client-side only. The decision logic lives in sets.js (tested in Node).
 
 import { extensionNames, extensionTypes, extension_settings, enableExtension, disableExtension, getExtensionManifest } from '../../../extensions.js';
-import { saveSettings, saveSettingsDebounced } from '../../../../script.js';
+import { saveSettings, saveSettingsDebounced, eventSource, event_types } from '../../../../script.js';
 import { snapshot, planApply, shouldAutoApply, guardAutoApply, guessDeviceLabel } from './sets.js';
 
 const DEVICE_KEY = 'extension_sets_device'; // per browser: id, label, assigned set
@@ -432,11 +432,29 @@ async function autoApplyOnLoad() {
     }
 }
 
-jQuery(async () => {
+/**
+ * This extension has loading_order: 1, so its own script runs very early in SillyTavern's
+ * boot sequence — specifically before ST calls getSettings(), which is what marks its settings
+ * system "ready" and only then fires APP_READY. Calling saveSettings() before that point doesn't
+ * error: ST's own saveSettings() silently schedules a later save and returns as if it succeeded.
+ * Auto-apply then reloads the page right after that fake success, before the real save has
+ * landed — so the next boot sees the same stale "who applied last" data and retries, tripping
+ * the loop guard. Waiting for APP_READY (fired once, at the very end of ST's startup) avoids the
+ * race entirely, rather than guessing at a delay.
+ */
+function scheduleAutoApply(bus, types) {
+    if (bus && types && types.APP_READY) {
+        bus.on(types.APP_READY, autoApplyOnLoad);
+        return;
+    }
+    return autoApplyOnLoad(); // no lifecycle event to wait on: fall back to running immediately
+}
+
+jQuery(() => {
     injectDialog();
     injectMenuButton();
-    await autoApplyOnLoad();
+    scheduleAutoApply(eventSource, event_types);
 });
 
 // Exposed for the Node glue tests (test/glue-test.mjs); ST ignores extra exports.
-export { applySet, autoApplyOnLoad, selfName, showContents };
+export { applySet, autoApplyOnLoad, scheduleAutoApply, selfName, showContents };

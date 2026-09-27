@@ -19,6 +19,8 @@ Wand menu → **Extension Sets**.
 
 SillyTavern keeps the enabled/disabled list on the server, so every device sees the same one. Sets are stored there too, so they show up everywhere, but *which set a device uses* is stored in that browser only.
 
+On each device, auto-apply waits for SillyTavern to fully finish loading (its `APP_READY` event) before touching anything — applying a set earlier than that can race ST's own startup and silently fail to save, which used to show up as a "tried too fast" warning on some boots. Manually clicking **Apply…** in the dialog is unaffected either way.
+
 The rule: **the last device to apply a set owns the shared state.** When a device with a set assigned loads and finds another device applied last, it applies its own set (one reload). It never re-applies on top of its own apply, so manual toggles survive reloads. Switch from phone to PC and back and each device flips the state exactly once.
 
 Safety: it never toggles itself, ignores set entries that aren't installed on this server, and won't auto-reload more than twice in two minutes if something goes wrong.
