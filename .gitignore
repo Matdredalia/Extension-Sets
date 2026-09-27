@@ -2,3 +2,4 @@ node_modules/
 
 # Dev-only test harness: kept locally, not needed to run the extension
 test/
+dev/
