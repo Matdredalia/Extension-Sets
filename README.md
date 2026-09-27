@@ -27,14 +27,6 @@ Safety: it never toggles itself, ignores set entries that aren't installed on th
 
 Copy this folder into `SillyTavern/data/<your-user>/extensions/extension-sets/` and reload SillyTavern. It then loads on every device pointed at that server.
 
-## Development
-
-The logic in `sets.js` is pure and tested in Node, and `index.js` is tested against mocked SillyTavern modules:
-
-```
-node test/sets-test.mjs
-node --import ./test/register.mjs test/glue-test.mjs
-```
 
 ## License
 
