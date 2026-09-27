@@ -6,7 +6,7 @@
   "js": "index.js",
   "css": "style.css",
   "author": "Matdredalia",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "homePage": "https://github.com/Matdredalia/Extension-Sets",
   "auto_update": false
 }
